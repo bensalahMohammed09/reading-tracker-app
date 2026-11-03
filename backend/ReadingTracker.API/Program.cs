@@ -16,6 +16,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
             sqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(5), null);
         }));
 
+// Configure CORS for the React frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 builder.Services.AddAuthentication(options =>
@@ -73,6 +84,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Apply the CORS middleware BEFORE authentication and authorization
+app.UseCors("AllowFrontend");
 
 // UseAuthentication MUST be placed before UseAuthorization
 app.UseAuthentication();
