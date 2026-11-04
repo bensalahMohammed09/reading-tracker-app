@@ -8,7 +8,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -20,6 +19,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: set lowercase owner name
+        run: |
+          echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}  
         
 
       - name: Log in to the container registry
@@ -34,11 +37,11 @@ jobs:
         with:
           context: ./backend/ReadingTracker.API
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api:${{ github.sha }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api:latest
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_LC }}-api:${{ github.sha }},${{ env.REGISTRY }}/${{ env.REPO_LC }}-api:latest
 
       - name: Build and push React Web
         uses: docker/build-push-action@v5
         with:
           context: ./frontend/web
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-web:${{ github.sha }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-web:latest    
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_LC }}-web:${{ github.sha }},${{ env.REGISTRY }}/${{ env.REPO_LC }}-web:latest    
