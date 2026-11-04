@@ -1,3 +1,6 @@
+version: '3.8'
+
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -9,6 +12,30 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./backend/ReadingTracker.API
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=reading_tracker;Username=admin;Password=password123;
+      - JwtSettings__Secret=your-super-secret-key-that-is-at-least-256-bits-long-for-security
+      - JwtSettings__Issuer=http://localhost:8000
+      - JwtSettings__Audience=http://localhost:3000
+      - JwtSettings__ExpiryMinutes=60
+    depends_on:
+      - postgres
+
+  web:
+    build:
+      context: ./frontend/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - api    
 
 volumes:
   pgdata:  
